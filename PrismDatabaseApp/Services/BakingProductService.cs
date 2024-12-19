@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using PrismDatabaseApp.Data;
 using PrismDatabaseApp.Models;
 using System;
@@ -18,13 +17,13 @@ namespace PrismDatabaseApp.Services
 
         public BakingProductService(AppDbContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context), "AppDbContext cannot be null.");
         }
 
         /// <summary>
         /// 날짜 범위와 배치번호에 따라 필터링된 데이터를 반환합니다.
         /// </summary>
-        public List<BakingProduct> GetProductsByDateRangeAndBatch(DateTime startDate, DateTime endDate, string batchNumber)
+        public List<BakingProductModel> GetProductsByDateRangeAndBatch(DateTime startDate, DateTime endDate, string batchNumber)
         {
             // SQL 쿼리 생성
             StringBuilder query = new StringBuilder();
@@ -38,21 +37,14 @@ namespace PrismDatabaseApp.Services
                 query.Append("AND [BatchNumber] = @BatchNumber ");
             }
 
-            // SQL 파라미터 추가
-            var parameters = new List<SqlParameter>
-            {
-                new SqlParameter("@StartDate", startDate.Date),
-                new SqlParameter("@EndDate", endDate.Date)
-            };
-
-            if (!string.IsNullOrWhiteSpace(batchNumber))
-            {
-                parameters.Add(new SqlParameter("@BatchNumber", batchNumber));
-            }
-
             // 쿼리 실행
             return _context.BakingProducts
-                           .FromSqlRaw(query.ToString(), parameters.ToArray())
+                           .FromSqlRaw(query.ToString(), new object[]
+                           {
+                               new Microsoft.Data.SqlClient.SqlParameter("@StartDate", startDate.Date),
+                               new Microsoft.Data.SqlClient.SqlParameter("@EndDate", endDate.Date),
+                               new Microsoft.Data.SqlClient.SqlParameter("@BatchNumber", batchNumber ?? string.Empty)
+                           })
                            .AsNoTracking()
                            .ToList();
         }

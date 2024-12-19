@@ -5,7 +5,7 @@ namespace PrismDatabaseApp.Models
     /// <summary>
     /// BakingProducts 테이블과 매핑되는 모델 클래스
     /// </summary>
-    public class BakingProduct
+    public class BakingProductModel
     {
         public int ProductId { get; set; }        // 제품 ID
         public string ProductName { get; set; }   // 제품 이름

@@ -3,6 +3,7 @@ using Prism.Ioc;
 using PrismDatabaseApp.Data;
 using PrismDatabaseApp.Services;
 using PrismDatabaseApp.Views;
+using Microsoft.EntityFrameworkCore;
 
 namespace PrismDatabaseApp
 {
@@ -16,7 +17,7 @@ namespace PrismDatabaseApp
         /// </summary>
         protected override Window CreateShell()
         {
-            return Container.Resolve<MainWindow>(); // DI를 통해 MainWindow 반환
+            return Container.Resolve<MainWindowView>(); // DI를 통해 MainWindow 반환
         }
 
         /// <summary>
@@ -24,11 +25,18 @@ namespace PrismDatabaseApp
         /// </summary>
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            // Entity Framework DbContext 등록
-            containerRegistry.RegisterSingleton<AppDbContext>();
+            string sql = "Server=SUNJIN-NOTEBOOK\\MSSQLSERVERR;Database=BakingManagementDB;Trusted_Connection=True;TrustServerCertificate=True;";
+            // DbContextOptions 설정 후 AppDbContext 등록
+            containerRegistry.RegisterSingleton<AppDbContext>(() =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+                optionsBuilder.UseSqlServer(sql);
+                return new AppDbContext(optionsBuilder.Options);
+            });
 
             // 서비스 클래스 등록
             containerRegistry.RegisterSingleton<BakingProductService>();
         }
     }
 }
+
