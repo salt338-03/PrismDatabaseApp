@@ -4,6 +4,7 @@ using PrismDatabaseApp.Data;
 using PrismDatabaseApp.Services;
 using PrismDatabaseApp.Views;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace PrismDatabaseApp
 {
@@ -31,12 +32,19 @@ namespace PrismDatabaseApp
             {
                 var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
                 optionsBuilder.UseSqlServer(sql);
-                return new AppDbContext(optionsBuilder.Options);
+                var context = new AppDbContext(optionsBuilder.Options);
+
+                // DbContext를 사전에 초기화하여 첫 조회 속도 개선
+                context.Database.EnsureCreated(); // 데이터베이스 준비
+                context.SnackProducts.FirstOrDefault(); // 메타데이터 캐싱
+                return context;
             });
 
             // 서비스 클래스 등록
             containerRegistry.RegisterSingleton<BakingProductService>();
+            containerRegistry.RegisterSingleton<SnackProductsService>();
         }
+
     }
 }
 

@@ -2,7 +2,6 @@
 using Prism.Mvvm;
 using PrismDatabaseApp.Models;
 using PrismDatabaseApp.Services;
-using PrismDatabaseApp.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -13,16 +12,14 @@ namespace PrismDatabaseApp.ViewModels
     /// <summary>
     /// MainWindow의 ViewModel - 사용자 입력 및 데이터 조회 처리
     /// </summary>
-    public class MainWindowViewModel : BindableBase
+    public class SnackSerchViewModel : BindableBase
     {
-        public DelegateCommand ShowQuery1Command { get; }
-        public DelegateCommand ShowQuery2Command { get; }
-        private readonly BakingProductService _bakingProductService;
+        private readonly SnackProductsService _SnackProductsService;
 
         /// <summary>
         /// UI에 바인딩할 데이터 리스트
         /// </summary>
-        public ObservableCollection<BakingProductModel> BakingProducts { get; set; } = new ObservableCollection<BakingProductModel>();
+        public ObservableCollection<SnackProductsModel> SnackProducts { get; set; } = new ObservableCollection<SnackProductsModel>();
         private bool _isSearching = false;
         // 2024년 1월 1일로 초기화
         private DateTime _startDate = new DateTime(2024, 1, 1);
@@ -60,48 +57,36 @@ namespace PrismDatabaseApp.ViewModels
         /// <summary>
         /// ViewModel 생성자 - BakingProductService 의존성 주입
         /// </summary>
-        public MainWindowViewModel(BakingProductService bakingProductService)
+        public SnackSerchViewModel(SnackProductsService SnackProductsService)
         {
-            ShowQuery1Command = new DelegateCommand(ShowNewView1);
-            ShowQuery2Command = new DelegateCommand(ShowNewView2);
-            _bakingProductService = bakingProductService ?? throw new ArgumentNullException(nameof(bakingProductService), "BakingProductService cannot be null.");
+            _SnackProductsService = SnackProductsService ?? throw new ArgumentNullException(nameof(SnackProductsService), "SnackProductsService cannot be null.");
 
             // Search 메서드와 검색 버튼을 연결
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
         }
-        private void ShowNewView1()
-        {
-            var newView = new MainWindowView();
-            newView.Show();
-        }
-        private void ShowNewView2()
-        {
-            var newView = new SnackSerchView();
-            newView.Show();
-        }
+
         /// <summary>
         /// 비동기 방식으로 데이터를 검색합니다.
         /// </summary>
         private async Task SearchAsync()
         {
             if (_isSearching) return;
-
             try
             {
                 _isSearching = true;
                 // UI 갱신 전에 기존 데이터를 초기화
-                BakingProducts.Clear();
+                SnackProducts.Clear();
 
 
 
                 // 데이터베이스에서 조건에 맞는 데이터를 가져옴
                 var results = await Task.Run(() =>
-                    _bakingProductService.GetProductsByDateRangeAndBatch(StartDate, EndDate, BatchNumber));
+                    _SnackProductsService.GetProductsByDateRangeAndBatch(StartDate, EndDate, BatchNumber));
 
                 // 조회된 데이터를 UI에 반영
                 foreach (var product in results)
                 {
-                    BakingProducts.Add(product);
+                    SnackProducts.Add(product);
                 }
 
                 // 사용자에게 결과 알림
@@ -114,7 +99,7 @@ namespace PrismDatabaseApp.ViewModels
             }
             finally
             {
-                _isSearching = false;   
+                _isSearching = false;
             }
         }
     }
