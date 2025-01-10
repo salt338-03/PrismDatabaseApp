@@ -3,18 +3,39 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="조회창" Height="500" Width="1000">
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        Title="조회창" Height="500" Width="862"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}">
     <DockPanel>
+        <Button Content="차트 보기" Grid.Column="2" Width="100" Margin="5"
+        Command="{Binding ShowChartWindowCommand}"
+        Style="{DynamicResource MaterialDesignFlatButton}" />
+
+        <ContentControl prism:RegionManager.RegionName="MainRegion" />
         <!-- 상단 버튼 영역 -->
-        <Grid Height="50" Background="Gray" DockPanel.Dock="Top">
+        <Grid Height="50" DockPanel.Dock="Top" Background="{DynamicResource MaterialDesignCardBackground}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Content="조회1" Grid.Column="0" Width="100" Margin="5" Command="{Binding ShowQuery1Command}"/>
-            <Button Content="조회2" Grid.Column="1" Width="100" Margin="5" Command="{Binding ShowQuery2Command}"/>
+            <Button Content="조회1" Grid.Column="0" Width="100" Margin="5" 
+                    Command="{Binding ShowQuery1Command}" 
+                    Style="{DynamicResource MaterialDesignFlatButton}" 
+                    Background="{DynamicResource ButtonBackground}"/>
+            <Button Content="조회2" Grid.Column="1" Width="100" Margin="5" 
+                    Command="{Binding ShowQuery2Command}" 
+                    Style="{DynamicResource MaterialDesignFlatButton}" 
+                    Background="{DynamicResource ButtonBackground}"/>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Column="2" Orientation="Horizontal" Margin="5">
+                <TextBlock Text="Choose Theme" FontWeight="Bold" Margin="0,0,10,0" VerticalAlignment="Center" 
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <ToggleButton Content="Dark Mode" IsChecked="{Binding IsDarkTheme}" 
+                              Style="{DynamicResource MaterialDesignSwitchToggle}"/>
+            </StackPanel>
         </Grid>
 
         <!-- 조회 창 영역 -->
@@ -25,23 +46,44 @@
             </Grid.RowDefinitions>
 
             <!-- 조회 조건 -->
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,10,0,20">
-                <TextBlock Text="시작 날짜:" VerticalAlignment="Center" Width="80" />
-                <DatePicker SelectedDate="{Binding StartDate}" Width="150" />
-                <TextBlock Text="끝 날짜:" VerticalAlignment="Center" Margin="10,0,0,0" Width="80" />
-                <DatePicker SelectedDate="{Binding EndDate}" Width="150" />
-                <TextBlock Text="배치번호:" VerticalAlignment="Center" Margin="10,0,0,0" Width="80" />
-                <TextBox Text="{Binding BatchNumber}" Width="150" />
-                <Button Content="조회" Command="{Binding SearchCommand}" Margin="20,0,0,0" Width="80" />
+            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,10,0,20" Background="{DynamicResource MaterialDesignCardBackground}">
+                <TextBlock Text="시작 날짜:" VerticalAlignment="Center" Width="80" Margin="10,0,10,0" 
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <DatePicker SelectedDate="{Binding StartDate}" Width="150"/>
+
+                <TextBlock Text="끝 날짜:" VerticalAlignment="Center"  Width="80" 
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <DatePicker SelectedDate="{Binding EndDate}" Width="150" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                <TextBlock Text="배치번호:" VerticalAlignment="Center" Margin="10,0,10,0" Width="80" 
+                           Foreground="{DynamicResource MaterialDesignBody}"/>
+                <TextBox Text="{Binding BatchNumber}" Width="150" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+                <Button Command="{Binding SearchCommand}" Width="80"  
+                        Style="{DynamicResource MaterialDesignRaisedButton}" 
+                        
+                       >
+                    <materialDesign:PackIcon Foreground="Black" Kind="Cat" Height="35" Width="auto" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Button>
             </StackPanel>
 
             <!-- 결과 리스트 -->
             <ListView ItemsSource="{Binding BakingProducts}" Grid.Row="1" Margin="0,20,0,0">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Product ID" DisplayMemberBinding="{Binding ProductId}" Width="100"/>
+                        <GridViewColumn Header="Product ID" Width="150">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ProductId}" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center" 
+                       TextAlignment="Center"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
                         <GridViewColumn Header="Product Name" DisplayMemberBinding="{Binding ProductName}" Width="200"/>
-                        <GridViewColumn Header="Created Date" DisplayMemberBinding="{Binding CreatedDate}" Width="150"/>
+                        <GridViewColumn Header="Created Date" DisplayMemberBinding="{Binding CreatedDate}" Width="200"/>
                         <GridViewColumn Header="Batch Number" DisplayMemberBinding="{Binding BatchNumber}" Width="150"/>
                     </GridView>
                 </ListView.View>

@@ -6,7 +6,10 @@ using PrismDatabaseApp.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using MaterialDesignThemes.Wpf;
 using System.Windows;
+using System.Windows.Input;
+using Prism.Regions;
 
 namespace PrismDatabaseApp.ViewModels
 {
@@ -15,6 +18,19 @@ namespace PrismDatabaseApp.ViewModels
     /// </summary>
     public class MainWindowViewModel : BindableBase
     {
+        public DelegateCommand ShowChartWindowCommand { get; }
+        private readonly IThemeService _themeService;
+        private bool _isDarkTheme;
+        public bool IsDarkTheme
+        {
+            get => _isDarkTheme;
+            set
+            {
+                SetProperty(ref _isDarkTheme, value);
+                _themeService.SetTheme(value);
+            }
+        }
+        //public ICommand ToggleBaseCommand { get; }
         public DelegateCommand ShowQuery1Command { get; }
         public DelegateCommand ShowQuery2Command { get; }
         private readonly BakingProductService _bakingProductService;
@@ -23,7 +39,9 @@ namespace PrismDatabaseApp.ViewModels
         /// UI에 바인딩할 데이터 리스트
         /// </summary>
         public ObservableCollection<BakingProductModel> BakingProducts { get; set; } = new ObservableCollection<BakingProductModel>();
+
         private bool _isSearching = false;
+
         // 2024년 1월 1일로 초기화
         private DateTime _startDate = new DateTime(2024, 1, 1);
         public DateTime StartDate
@@ -60,8 +78,11 @@ namespace PrismDatabaseApp.ViewModels
         /// <summary>
         /// ViewModel 생성자 - BakingProductService 의존성 주입
         /// </summary>
-        public MainWindowViewModel(BakingProductService bakingProductService)
+        public MainWindowViewModel(IThemeService themeService,BakingProductService bakingProductService)
         {
+            ShowChartWindowCommand = new DelegateCommand(OpenChartWindow);
+            _themeService = themeService;
+            IsDarkTheme = false; // 기본값 (라이트 모드)
             ShowQuery1Command = new DelegateCommand(ShowNewView1);
             ShowQuery2Command = new DelegateCommand(ShowNewView2);
             _bakingProductService = bakingProductService ?? throw new ArgumentNullException(nameof(bakingProductService), "BakingProductService cannot be null.");
@@ -69,16 +90,51 @@ namespace PrismDatabaseApp.ViewModels
             // Search 메서드와 검색 버튼을 연결
             SearchCommand = new DelegateCommand(async () => await SearchAsync());
         }
+        private void OpenChartWindow()
+        {
+            // ChartWindow를 새 창으로 엽니다.
+            var chartWindow = new Views.PLCChartView
+            {
+                DataContext = new ViewModels.PLCChartViewModel() // ViewModel 연결
+            };
+            chartWindow.Show();
+        }
+        ///// <summary>
+        ///// 테마를 적용합니다.
+        ///// </summary>
+        //private void ApplyTheme(bool isDark)
+        //{
+        //    // 현재 테마 가져오기
+        //    var theme = _paletteHelper.GetTheme() as Theme;
+
+        //    if (theme != null)
+        //    {
+        //        // 다크 모드 또는 라이트 모드 설정
+        //        theme.SetBaseTheme(isDark ? BaseTheme.Dark : BaseTheme.Light);
+
+        //        // 변경된 테마를 적용
+        //        _paletteHelper.SetTheme(theme);
+        //    }
+        //}
+
+        /// <summary>
+        /// 새로운 View1 표시
+        /// </summary>
         private void ShowNewView1()
         {
             var newView = new MainWindowView();
             newView.Show();
         }
+
+        /// <summary>
+        /// 새로운 View2 표시
+        /// </summary>
         private void ShowNewView2()
         {
             var newView = new SnackSerchView();
             newView.Show();
         }
+
         /// <summary>
         /// 비동기 방식으로 데이터를 검색합니다.
         /// </summary>
@@ -92,13 +148,11 @@ namespace PrismDatabaseApp.ViewModels
                 // UI 갱신 전에 기존 데이터를 초기화
                 BakingProducts.Clear();
 
-
-
                 // 데이터베이스에서 조건에 맞는 데이터를 가져옴
                 var results = await Task.Run(() =>
                     _bakingProductService.GetProductsByDateRangeAndBatch(StartDate, EndDate, BatchNumber));
 
-                // 조회된 데이터를 UI에 반영
+                // 조회된 데이터를 UI에 반영a
                 foreach (var product in results)
                 {
                     BakingProducts.Add(product);
@@ -114,7 +168,7 @@ namespace PrismDatabaseApp.ViewModels
             }
             finally
             {
-                _isSearching = false;   
+                _isSearching = false;
             }
         }
     }

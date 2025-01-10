@@ -4,48 +4,10 @@
         xmlns:prism="http://prismlibrary.com/"
         prism:ViewModelLocator.AutoWireViewModel="True"
         Title="조회창" Height="500" Width="1000">
-    <DockPanel>
-        <!-- 상단 버튼 영역 -->
-        <Grid Height="50" Background="Gray" DockPanel.Dock="Top">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Content="조회1" Grid.Column="0" Width="100" Margin="5" Command="{Binding ShowQuery1Command}"/>
-            <Button Content="조회2" Grid.Column="1" Width="100" Margin="5" Command="{Binding ShowQuery2Command}"/>
-        </Grid>
-
-        <!-- 조회 조건과 결과 리스트 묶음 -->
-        <Grid Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <!-- 조회 조건 -->
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,10,0,20">
-                <TextBlock Text="시작 날짜:" VerticalAlignment="Center" Width="80" />
-                <DatePicker SelectedDate="{Binding StartDate}" Width="150" />
-                <TextBlock Text="끝 날짜:" VerticalAlignment="Center" Margin="10,0,0,0" Width="80" />
-                <DatePicker SelectedDate="{Binding EndDate}" Width="150" />
-                <TextBlock Text="배치번호:" VerticalAlignment="Center" Margin="10,0,0,0" Width="80" />
-                <TextBox Text="{Binding BatchNumber}" Width="150" />
-                <Button Content="조회" Command="{Binding SearchCommand}" Margin="20,0,0,0" Width="80" />
-            </StackPanel>
-
-            <!-- 결과 리스트 -->
-            <ListView ItemsSource="{Binding SnackProducts}" Grid.Row="1" Margin="0,20,0,0">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Product ID" DisplayMemberBinding="{Binding SnackId}" Width="100"/>
-                        <GridViewColumn Header="Snack Name" DisplayMemberBinding="{Binding SnackName}" Width="200"/>
-                        <GridViewColumn Header="Created Date" DisplayMemberBinding="{Binding CreatedDate}" Width="150"/>
-                        <GridViewColumn Header="Batch Number" DisplayMemberBinding="{Binding BatchNumber}" Width="150"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </Grid>
-    </DockPanel>
+    <Button
+ 
+  Content="_MID"
+  IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+  Style="{StaticResource MaterialDesignRaisedButton}"
+  ToolTip="Resource name: MaterialDesignRaisedButton" />
 </Window>
