@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PrismDatabaseApp.Models;
 
 namespace PrismDatabaseApp.Data
 {
@@ -8,8 +7,6 @@ namespace PrismDatabaseApp.Data
     /// </summary>
     public class AppDbContext : DbContext
     {
-        public DbSet<BakingProductModel> BakingProducts { get; set; }
-        public DbSet<SnackProductsModel> SnackProducts { get; set; }
 
         //AppDbContext 생성자는 Entity Framework Core가 데이터베이스 연결 정보를 초기화하도록 DbContextOptions를 전달받기 위해 필요합니다.
         //DbContextOptions는 Entity Framework Core에서 데이터베이스 연결 정보와 구성 설정(SQL Server, SQLite 등)을 관리하는 객체입니다.
@@ -19,17 +16,7 @@ namespace PrismDatabaseApp.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // BakingProducts 테이블 매핑
-            modelBuilder.Entity<BakingProductModel>(entity =>
-            {
-                entity.ToTable("BakingProducts");
-                entity.HasKey(e => e.ProductId);
-            });
-            modelBuilder.Entity<SnackProductsModel>(entity =>
-            {
-                entity.ToTable("SnackProducts");
-                entity.HasKey(e => e.SnackId);
-            });
+
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using Prism.Regions;
 
 namespace PrismDatabaseApp.Views
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindowView : Window
     {
-        public MainWindowView()
+        private readonly IRegionManager _regionManager;
+
+        public MainWindowView(IRegionManager regionManager)
         {
             InitializeComponent();
         }
