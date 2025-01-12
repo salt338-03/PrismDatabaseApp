@@ -18,7 +18,6 @@ namespace PrismDatabaseApp
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             // View와 ViewModel 등록
-            containerRegistry.RegisterForNavigation<SlurrySupplyProcessView>();
             containerRegistry.RegisterForNavigation<CoatingProcessView>();
             containerRegistry.RegisterForNavigation<DryingProcessView>();
             containerRegistry.RegisterForNavigation<NavigationBarView>();
