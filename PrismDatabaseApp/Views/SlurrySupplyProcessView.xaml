@@ -24,7 +24,7 @@
                 <TextBlock Text="Running since 9:00 AM" FontSize="14" Foreground="Gray" />
                 <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" Margin="0,10,0,0" Foreground="#00A4FF" Background="#2D2D2D" />
                 <TextBlock Text="{Binding EstimatedTime}" FontSize="14" Foreground="Gray" />
-            </StackPanel>
+            </StackPanel>  
 
             <!-- 데이터 그래프와 메트릭 -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,20">
