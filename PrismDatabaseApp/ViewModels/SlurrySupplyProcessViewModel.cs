@@ -1,19 +1,21 @@
-﻿using LiveCharts;
-using LiveCharts.Wpf;
+﻿using Prism.Mvvm;
+using LiveCharts;
 using LiveCharts.Defaults;
-using Prism.Mvvm;
 using System;
-using System.Linq;
-using System.Timers;
+using PrismDatabaseApp.Models;
 using PrismDatabaseApp;
+using LiveCharts.Wpf;
 
 public class SlurrySupplyProcessViewModel : BindableBase
 {
+    private readonly ITcpSocketService _tcpSocketService;
+
     public SeriesCollection SpeedChartSeries { get; set; }
-    public Func<double, string> XAxisFormatter { get; set; }
+    public SeriesCollection TemperatureChartSeries { get; set; }
+    public SeriesCollection VolumeChartSeries { get; set; }
 
     private double _xAxisMin;
-    public double XAxisMin 
+    public double XAxisMin
     {
         get => _xAxisMin;
         set => SetProperty(ref _xAxisMin, value);
@@ -27,78 +29,99 @@ public class SlurrySupplyProcessViewModel : BindableBase
     }
 
     private DateTime _startTime;
-    private Timer _dataGenerationTimer;
 
-    public SlurrySupplyProcessViewModel()
+    public Func<double, string> XAxisFormatter { get; set; }
+
+    public SlurrySupplyProcessViewModel(ITcpSocketService tcpSocketService)
     {
-        // X축 포맷터 설정 (시간 표시)
+        _tcpSocketService = tcpSocketService;
+        _tcpSocketService.DataReceived += OnDataReceived;
+        _tcpSocketService.StartListening(System.Net.IPAddress.Any, 8080);
+
+        _startTime = DateTime.Now;
+
+        // 그래프 데이터 초기화
+        SpeedChartSeries = new SeriesCollection
+    {
+        new LineSeries
+        {
+            Title = "Speed",
+            Values = new ChartValues<ObservablePoint>()
+        }
+    };
+
+        TemperatureChartSeries = new SeriesCollection
+    {
+        new LineSeries
+        {
+            Title = "Temperature",
+            Values = new ChartValues<ObservablePoint>()
+        }
+    };
+
+        VolumeChartSeries = new SeriesCollection
+    {
+        new LineSeries
+        {
+            Title = "Volume",
+            Values = new ChartValues<ObservablePoint>()
+        }
+    };
+
+        XAxisMin = 0;
+        XAxisMax = 10;
+
+        // X축 포맷터 설정
         XAxisFormatter = value => _startTime.AddSeconds(value).ToString("hh:mm:ss");
 
-        // 데이터 시리즈 초기화
-        SpeedChartSeries = new SeriesCollection
+    }
+
+
+    private void OnDataReceived(string data)
+    {
+        try
         {
-            new LineSeries
+            // JSON 데이터를 ProcessData 객체로 변환
+            var processData = System.Text.Json.JsonSerializer.Deserialize<ProcessData>(data);
+
+            // SlurryTank의 Timestamp를 DateTime으로 변환
+            DateTime timestamp = DateTime.Parse(processData.SlurryTank.Timestamp);
+
+            // X축 시간 계산 (초 단위)
+            double elapsedTime = (timestamp - _startTime).TotalSeconds;
+
+            // UI 스레드에서 데이터 추가
+            App.Current.Dispatcher.Invoke(() =>
             {
-                Title = "Speed (mL/min)",
-                Values = new ChartValues<ObservablePoint>(),
-                PointGeometry = DefaultGeometries.Circle,
-                StrokeThickness = 2
-            }
-        };
+                // Slurry Supply Speed 데이터 추가
+                SpeedChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.SlurryTank.SupplySpeed));
 
-        // 초기화
-        _startTime = DateTime.Now;
-        XAxisMin = 0;
-        XAxisMax = 1; // 초기값
 
-        // 랜덤 데이터 생성 타이머 (3초마다 실행)
-        _dataGenerationTimer = new Timer(1000); // 3000ms = 3초
-        _dataGenerationTimer.Elapsed += GenerateRandomData;
-        _dataGenerationTimer.Start();
-    }
+                // Slurry Supply Temperature 데이터 추가
+                TemperatureChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.SlurryTank.Temperature));
 
-    /// <summary>
-    /// 랜덤 데이터를 생성하고 그래프에 추가
-    /// </summary>
-    private void GenerateRandomData(object sender, ElapsedEventArgs e)
-    {
-        App.Current.Dispatcher.Invoke(() =>
+                // Slurry Supply Volume 데이터 추가
+                VolumeChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.SlurryTank.RemainingVolume));
+
+                // 오래된 데이터 제거 (최신 30개 데이터 유지)
+                if (SpeedChartSeries[0].Values.Count > 30)
+                    SpeedChartSeries[0].Values.RemoveAt(0);
+
+                if (TemperatureChartSeries[0].Values.Count > 30)
+                    TemperatureChartSeries[0].Values.RemoveAt(0);
+
+                if (VolumeChartSeries[0].Values.Count > 30)
+                    VolumeChartSeries[0].Values.RemoveAt(0);
+
+                // X축 범위 업데이트
+                XAxisMin = Math.Max(0, elapsedTime - 30); // 최신 30초 범위 유지
+                XAxisMax = elapsedTime;
+            });
+        }
+        catch (Exception ex)
         {
-            Random random = new Random();
-
-            // 랜덤 속도 생성 (0.5 ~ 2.0 mL/min)
-            double randomSpeed = Math.Round(random.NextDouble() * 1.5 + 0.5, 2);
-
-            // 현재 시간
-            DateTime currentTime = DateTime.Now;
-
-            // 데이터 추가
-            AddData(randomSpeed, currentTime);
-        });
+            Console.WriteLine($"Error parsing data: {ex.Message}");
+        }
     }
 
-    /// <summary>
-    /// 속도와 시간 데이터를 그래프에 추가
-    /// </summary>
-    public void AddData(double speed, DateTime timestamp)
-    {
-        // 시간 경과를 초 단위로 변환
-        double elapsedTime = (timestamp - _startTime).TotalSeconds;
-
-        // 그래프에 데이터 추가 (X: 시간 경과, Y: 속도)
-        SpeedChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, speed));
-
-        // 오래된 데이터 제거
-        if (SpeedChartSeries[0].Values.Count > 6) // 최신 30개 데이터 유지
-            SpeedChartSeries[0].Values.RemoveAt(0);
-
-        // X축 범위 업데이트
-        XAxisMin = SpeedChartSeries[0].Values.Cast<ObservablePoint>().Min(p => p.X);
-        XAxisMax = SpeedChartSeries[0].Values.Cast<ObservablePoint>().Max(p => p.X);
-
-        // UI 업데이트
-        RaisePropertyChanged(nameof(SpeedChartSeries));
-        RaisePropertyChanged(nameof(XAxisMin));
-        RaisePropertyChanged(nameof(XAxisMax));
-    }
 }

@@ -22,6 +22,7 @@ namespace PrismDatabaseApp
             containerRegistry.RegisterForNavigation<DryingProcessView>();
             containerRegistry.RegisterForNavigation<NavigationBarView>();
             containerRegistry.RegisterForNavigation<SlurrySupplyProcessView, SlurrySupplyProcessViewModel>();
+            containerRegistry.RegisterSingleton<ITcpSocketService, TcpSocketService>();
         }
 
         protected override void OnInitialized()
@@ -32,6 +33,7 @@ namespace PrismDatabaseApp
             var regionManager = Container.Resolve<IRegionManager>();
             regionManager.RegisterViewWithRegion("NavigationRegion", typeof(NavigationBarView));
             regionManager.RequestNavigate("ContentRegion", "SlurrySupplyProcessView");
+
         }
     }
 }
