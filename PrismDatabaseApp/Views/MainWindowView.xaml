@@ -6,11 +6,25 @@
         Icon="/Assets/cat_icon.ico" >
 
     <DockPanel Background="#2D2D2D">
-        <!-- 배경색 설정 -->
         <!-- 네비게이션 바 -->
         <ContentControl prism:RegionManager.RegionName="NavigationRegion" DockPanel.Dock="Left" Width="250" Background="Black" />
 
-        <!-- 메인 콘텐츠 -->
-        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        <!-- 메인 콘텐츠와 알람 영역을 포함하는 Grid -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <!-- 상단 2/3 -->
+                <RowDefinition Height="2*" />
+                <!-- 하단 1/3 -->
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- 메인 콘텐츠 영역 -->
+            <ContentControl prism:RegionManager.RegionName="ContentRegion" Grid.Row="0" Background="#2D2D2D" />
+
+            <!-- 알람 영역에 ScrollViewer 추가 -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"  Background="#2D2D2D">
+                <ContentControl prism:RegionManager.RegionName="AlarmRegion" />
+            </ScrollViewer>
+        </Grid>
     </DockPanel>
 </Window>

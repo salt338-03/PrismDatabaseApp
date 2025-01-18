@@ -1,93 +1,115 @@
-﻿using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
-using Prism.Mvvm;
+﻿using Prism.Mvvm;
+using LiveCharts;
+using LiveCharts.Defaults;
 using System;
+using PrismDatabaseApp.Models;
+using PrismDatabaseApp;
+using LiveCharts.Wpf;
+using Prism.Commands;
 using System.Collections.ObjectModel;
-using System.Timers;
 
 namespace PrismDatabaseApp.ViewModels
 {
-    public class WaterSupplyData
-    {
-        public DateTime Time { get; set; }
-        public double SupplyRate { get; set; } // 공급 속도
-    }
 
     public class CoatingProcessViewModel : BindableBase
     {
-        private readonly Timer _dataGenerationTimer;
-        public PlotModel PlotModel { get; private set; }
-        public ObservableCollection<WaterSupplyData> WaterSupplyDataList { get; private set; }
-        // Coating Process 관련 로직 추가
-        public CoatingProcessViewModel()
+        private readonly ITcpSocketService _tcpSocketService;
+        public SeriesCollection CoatingSpeedChartSeries { get; set; }
+        public SeriesCollection CoatingThicknessChartSeries { get; set; }
+
+        private double _xAxisMin;
+        public double XAxisMin
         {
-            WaterSupplyDataList = new ObservableCollection<WaterSupplyData>();
-
-            // PlotModel 초기화
-            PlotModel = new PlotModel { Title = "Water Supply Rate Over Time" };
-            // X축 추가
-            var dateTimeAxis = new DateTimeAxis
-            {
-                Position = AxisPosition.Bottom,
-                StringFormat = "HH:mm:ss",
-                Title = "Time",
-                IntervalType = DateTimeIntervalType.Seconds,
-                IsZoomEnabled = true,
-                IsPanEnabled = true
-            };
-            PlotModel.Axes.Add(dateTimeAxis);
-            // Y축 추가
-            var linearAxis = new LinearAxis
-            {
-                Position = AxisPosition.Left,
-                Title = "Supply Rate (L/s)"
-            };
-            PlotModel.Axes.Add(linearAxis);
-            // 데이터 시리즈 추가
-            var lineSeries = new LineSeries
-            {
-                Title = "Water Supply Rate",
-                MarkerType = MarkerType.Circle
-            };
-            PlotModel.Series.Add(lineSeries);
-
-            // 타이머 설정
-            _dataGenerationTimer = new Timer(1000);
-            _dataGenerationTimer.Elapsed += GenerateRandomData;
-            _dataGenerationTimer.Start();
-
+            get => _xAxisMin;
+            set => SetProperty(ref _xAxisMin, value);
         }
-        private void GenerateRandomData(object sender, ElapsedEventArgs e)
+
+        private double _xAxisMax;
+        public double XAxisMax
         {
-            // 랜덤 데이터 생성
-            var random = new Random();
-            var newData = new WaterSupplyData
+            get => _xAxisMax;
+            set => SetProperty(ref _xAxisMax, value);
+        }
+        private DateTime _startTime;
+        public Func<double, string> XAxisFormatter { get; set; }
+        public CoatingProcessViewModel(ITcpSocketService tcpSocketService)
+        {
+            _tcpSocketService = tcpSocketService;
+
+            // TcpSocketService 이벤트 구독
+            _tcpSocketService.CoatingProcessDataReceived -= OnCoatingProcessDataReceived;
+            _tcpSocketService.CoatingProcessDataReceived += OnCoatingProcessDataReceived;
+
+            _startTime = DateTime.Now;
+
+            CoatingSpeedChartSeries = InitializeChartSeries("Speed");
+            CoatingThicknessChartSeries = InitializeChartSeries("Thickness");
+            
+
+            XAxisMin = 0;
+            XAxisMax = 10;
+
+            // X축 포맷터 설정
+            XAxisFormatter = value => _startTime.AddSeconds(value).ToString("hh:mm:ss");
+        }
+        private SeriesCollection InitializeChartSeries(string title)
+        {
+            return new SeriesCollection
             {
-                Time = DateTime.Now,
-                SupplyRate = random.NextDouble() * 100 // 0~100 사이 랜덤 값
+                new LineSeries
+                {
+                    Title = title,
+                    Values = new ChartValues<ObservablePoint>()
+                }
             };
+        }
+        private void UpdateChartData(double elapsedTime, ProcessData processData)
+        {
+            //  CoatingSpeed 데이터 추가
+            CoatingSpeedChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.CoatingProcess.Speed));
 
-            // UI 스레드에서 데이터 추가
-            App.Current.Dispatcher.Invoke(() =>
+            // CoatingThickness 데이터 추가
+            CoatingThicknessChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.CoatingProcess.Thickness));
+
+
+            // 오래된 데이터 제거 (최신 30개 데이터 유지)
+            TrimOldData(CoatingSpeedChartSeries[0].Values);
+            TrimOldData(CoatingThicknessChartSeries[0].Values);
+           
+            // X축 범위 업데이트
+            XAxisMin = Math.Max(0, elapsedTime - 30); // 최신 30초 범위 유지
+            XAxisMax = elapsedTime;
+        }
+        private void TrimOldData(IChartValues values)
+        {
+            while (values.Count > 30)
             {
-                WaterSupplyDataList.Add(newData);
+                values.RemoveAt(0);
+            }
+        }
+        private void OnCoatingProcessDataReceived(string data)
+        {
+            try
+            {
+                // JSON 데이터를 ProcessData 객체로 변환
+                var processData = System.Text.Json.JsonSerializer.Deserialize<ProcessData>(data);
 
-                // 오래된 데이터 제거 (100개 제한)
-                if (WaterSupplyDataList.Count > 100)
-                    WaterSupplyDataList.RemoveAt(0);
+                // CoatingProcess의 Timestamp를 DateTime으로 변환
+                if (!DateTime.TryParse(processData.CoatingProcess.Timestamp, out DateTime timestamp))
+                {
+                    throw new FormatException("Invalid timestamp format.");
+                }
 
-                // PlotModel 업데이트
-                var series = (LineSeries)PlotModel.Series[0];
-                series.Points.Add(new DataPoint(DateTimeAxis.ToDouble(newData.Time), newData.SupplyRate));
+                // X축 시간 계산 (초 단위)
+                double elapsedTime = (timestamp - _startTime).TotalSeconds;
 
-                // 오래된 점 제거
-                if (series.Points.Count > 100)
-                    series.Points.RemoveAt(0);
-
-                PlotModel.InvalidatePlot(true); // 그래프 업데이트
-            });
+                // UI 스레드에서 데이터 추가
+                App.Current.Dispatcher.Invoke(() => UpdateChartData(elapsedTime, processData));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnSlurrySupplyDataReceived: {ex.Message}");
+            }
         }
     }
-
 }
