@@ -83,7 +83,7 @@ public class TcpSocketService : ITcpSocketService
                 if (byteCount == 0) break;
 
                 var data = Encoding.UTF8.GetString(buffer, 0, byteCount);
-                Console.WriteLine($"Raw data received: {data}");
+                //Console.WriteLine($"Raw data received: {data}");
 
                 // JSON 데이터 파싱
                 JObject jsonData = JObject.Parse(data);

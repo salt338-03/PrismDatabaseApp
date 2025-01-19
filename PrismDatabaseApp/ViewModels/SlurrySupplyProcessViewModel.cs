@@ -15,6 +15,24 @@ public class SlurrySupplyProcessViewModel : BindableBase
     public SeriesCollection TemperatureChartSeries { get; set; }
     public SeriesCollection VolumeChartSeries { get; set; }
 
+    private double _SlurrySupplySpeed;
+    public double SlurrySupplySpeed
+    {
+        get => _SlurrySupplySpeed;
+        set => SetProperty(ref _SlurrySupplySpeed, value);
+    }
+    private double _SlurrySupplyTemperature;
+    public double SlurrySupplyTemperature
+    {
+        get => _SlurrySupplyTemperature;
+        set => SetProperty(ref _SlurrySupplyTemperature, value);
+    }
+    private double _SlurrySupplyVolume;
+    public double SlurrySupplyVolume
+    {
+        get => _SlurrySupplyVolume;
+        set => SetProperty(ref _SlurrySupplyVolume, value);
+    }
     private double _xAxisMin;
     public double XAxisMin
     {
@@ -73,7 +91,7 @@ public class SlurrySupplyProcessViewModel : BindableBase
     {
         try
         {
-            Console.WriteLine($"OnSlurrySupplyDataReceived called with data: {data}");
+            //Console.WriteLine($"OnSlurrySupplyDataReceived called with data: {data}");
 
             // JSON 데이터를 ProcessData 객체로 변환
             var processData = System.Text.Json.JsonSerializer.Deserialize<ProcessData>(data);
@@ -86,7 +104,9 @@ public class SlurrySupplyProcessViewModel : BindableBase
 
             // X축 시간 계산 (초 단위)
             double elapsedTime = (timestamp - _startTime).TotalSeconds;
-
+            SlurrySupplySpeed = processData.SlurryTank.SupplySpeed;
+            SlurrySupplyTemperature = processData.SlurryTank.Temperature;
+            SlurrySupplyVolume = processData.SlurryTank.RemainingVolume;
             // UI 스레드에서 데이터 추가
             App.Current.Dispatcher.Invoke(() => UpdateChartData(elapsedTime, processData));
         }
@@ -100,7 +120,7 @@ public class SlurrySupplyProcessViewModel : BindableBase
     {
         // Slurry Supply Speed 데이터 추가
         SpeedChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.SlurryTank.SupplySpeed));
-
+        
         // Slurry Supply Temperature 데이터 추가
         TemperatureChartSeries[0].Values.Add(new ObservablePoint(elapsedTime, processData.SlurryTank.Temperature));
 

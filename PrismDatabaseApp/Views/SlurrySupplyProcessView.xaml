@@ -36,7 +36,7 @@
 
                 <!--그래프-->
                 <Border Grid.Row="0" Background="#2D2D2D" CornerRadius="5" Width="400" Height="300">
-                    <lvc:CartesianChart Series="{Binding SpeedChartSeries}" Foreground="White" DisableAnimations="False">
+                    <lvc:CartesianChart Series="{Binding SpeedChartSeries}" Foreground="White" DisableAnimations="true">
                         <lvc:CartesianChart.AxisX>
                             <lvc:Axis Title="Time"
                                     LabelFormatter="{Binding XAxisFormatter}"
@@ -54,7 +54,7 @@
                 <!--메트릭-->
                 <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
                     <TextBlock Text="Slurry Supply Speed" Foreground="White" FontSize="14" HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding SlurrySupplySpeed}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding SlurrySupplySpeed, StringFormat='{}{0:F3}'}"  Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
                 </StackPanel>
             </Grid>
 
@@ -69,7 +69,7 @@
 
                 <!--그래프-->
                 <Border Grid.Row="0" Background="#2D2D2D" CornerRadius="5" Width="400" Height="300">
-                    <lvc:CartesianChart Series="{Binding TemperatureChartSeries}" Foreground="White">
+                    <lvc:CartesianChart Series="{Binding TemperatureChartSeries}" Foreground="White" DisableAnimations="true">
                         <lvc:CartesianChart.AxisX>
                             <lvc:Axis Title="Time"
                                     LabelFormatter="{Binding XAxisFormatter}"
@@ -86,8 +86,8 @@
                 <!--메트릭-->
                 <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
                     <TextBlock Text="Slurry Supply Temperature" Foreground="White" FontSize="14" HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding SlurrySupplyTemperature}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
-                </StackPanel>
+                    <TextBlock Text="{Binding SlurrySupplyTemperature, StringFormat='{}{0:F3}'}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                </StackPanel> 
             </Grid>
 
             <!-- 세 번째 그래프와 메트릭 -->
@@ -101,7 +101,7 @@
 
                 <!-- 그래프 -->
                 <Border Grid.Row="0" Background="#2D2D2D" CornerRadius="5" Width="400" Height="300">
-                    <lvc:CartesianChart Series="{Binding VolumeChartSeries}" Foreground="White">
+                    <lvc:CartesianChart Series="{Binding VolumeChartSeries}" Foreground="White" DisableAnimations="true">
                         <lvc:CartesianChart.AxisX>
                             <lvc:Axis Title="Time"
                                     LabelFormatter="{Binding XAxisFormatter}"
@@ -118,8 +118,8 @@
                 <!-- 메트릭 -->
                 <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,10,0,0">
                     <TextBlock Text="Slurry Supply Volume" Foreground="White" FontSize="14" HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding SlurrySupplyVolume}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
-                </StackPanel>
+                    <TextBlock Text="{Binding SlurrySupplyVolume, StringFormat='{}{0:F3}'}" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" />
+                </StackPanel> 
             </Grid>
         </StackPanel>
     </Grid>

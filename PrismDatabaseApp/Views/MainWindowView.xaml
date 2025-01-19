@@ -22,9 +22,9 @@
             <ContentControl prism:RegionManager.RegionName="ContentRegion" Grid.Row="0" Background="#2D2D2D" />
 
             <!-- 알람 영역에 ScrollViewer 추가 -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"  Background="#2D2D2D">
-                <ContentControl prism:RegionManager.RegionName="AlarmRegion" />
-            </ScrollViewer>
+            
+                <ContentControl prism:RegionManager.RegionName="AlarmRegion"  Grid.Row="1" />
+            
         </Grid>
     </DockPanel>
 </Window>
