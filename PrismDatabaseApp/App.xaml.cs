@@ -7,6 +7,10 @@ using Prism.Regions;
 using PrismDatabaseApp.ViewModels;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using PrismDatabaseApp.Data;
+using Microsoft.Data.SqlClient;
+
 
 namespace PrismDatabaseApp
 {
@@ -19,6 +23,21 @@ namespace PrismDatabaseApp
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            string connectionString = "Server=SUNJIN-NOTEBOOK\\MSSQLSERVERR;Database=testDB;Trusted_Connection=True;TrustServerCertificate=True;";
+
+
+
+            // RegisterInstance로 즉시 팩토리 실행
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+
+            var context = new AppDbContext(optionsBuilder.Options);
+            containerRegistry.RegisterInstance(context);
+
+
+            // AlarmService 등록
+            containerRegistry.RegisterSingleton<AlarmService>();
+
             // View와 ViewModel 등록
             containerRegistry.RegisterForNavigation<CoatingProcessView>();
             containerRegistry.RegisterForNavigation<AlarmBarView>();

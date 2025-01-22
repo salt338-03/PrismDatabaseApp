@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PrismDatabaseApp.Models;
 
 namespace PrismDatabaseApp.Data
 {
@@ -7,7 +8,7 @@ namespace PrismDatabaseApp.Data
     /// </summary>
     public class AppDbContext : DbContext
     {
-
+        public DbSet<AlarmEntity> Alarms { get; set; }
         //AppDbContext 생성자는 Entity Framework Core가 데이터베이스 연결 정보를 초기화하도록 DbContextOptions를 전달받기 위해 필요합니다.
         //DbContextOptions는 Entity Framework Core에서 데이터베이스 연결 정보와 구성 설정(SQL Server, SQLite 등)을 관리하는 객체입니다.
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
@@ -16,7 +17,13 @@ namespace PrismDatabaseApp.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.Entity<AlarmEntity>(entity =>
+            {
+                entity.ToTable("Alarms"); // 명시적으로 테이블 이름 설정 (기본값: 클래스명)
+                entity.HasKey(e => e.Id); // 기본 키 설정 (필수)
+                entity.Property(e => e.Message).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Timestamp).IsRequired();
+            });
         }
     }
 }
